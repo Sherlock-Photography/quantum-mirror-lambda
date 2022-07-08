@@ -1,0 +1,84 @@
+{
+  "object": "task",
+  "id": "task-abcdefghijklmnopqrstuvwx",
+  "created": 1657276449,
+  "task_type": "variations",
+  "status": "succeeded",
+  "status_information": {},
+  "prompt_id": "prompt-abcdefghijklmnopqrstuvwx",
+  "generations": {
+    "object": "list",
+    "data": [
+      {
+        "id": "generation-abcdefghijklmnopqrstuvw1",
+        "object": "generation",
+        "created": 1657276463,
+        "generation_type": "ImageGeneration",
+        "generation": {
+          "image_path": "https://openailabsprodscus.blob.core.windows.net/private/user-abcdefghijklmnopqrstuvwx/generations/generation-abcdefghijklmnopqrstuvw1/image.webp?st=2022-07-08T09"
+        },
+        "task_id": "task-abcdefghijklmnopqrstuvwx",
+        "prompt_id": "prompt-abcdefghijklmnopqrstuvwx",
+        "is_public": false
+      },
+      {
+        "id": "generation-abcdefghijklmnopqrstuvw2",
+        "object": "generation",
+        "created": 1657276463,
+        "generation_type": "ImageGeneration",
+        "generation": {
+          "image_path": "https://openailabsprodscus.blob.core.windows.net/private/user-abcdefghijklmnopqrstuvwx/generations/generation-abcdefghijklmnopqrstuvw2/image.webp?st=2022-07-08T09"
+        },
+        "task_id": "task-abcdefghijklmnopqrstuvwx",
+        "prompt_id": "prompt-abcdefghijklmnopqrstuvwx",
+        "is_public": false
+      },
+      {
+        "id": "generation-abcdefghijklmnopqrstuvw3",
+        "object": "generation",
+        "created": 1657276463,
+        "generation_type": "ImageGeneration",
+        "generation": {
+          "image_path": "https://openailabsprodscus.blob.core.windows.net/private/user-abcdefghijklmnopqrstuvwx/generations/generation-abcdefghijklmnopqrstuvw3/image.webp?st=2022-07-08T09"
+        },
+        "task_id": "task-abcdefghijklmnopqrstuvwx",
+        "prompt_id": "prompt-abcdefghijklmnopqrstuvwx",
+        "is_public": false
+      },
+      {
+        "id": "generation-abcdefghijklmnopqrstuvw4",
+        "object": "generation",
+        "created": 1657276468,
+        "generation_type": "ImageGeneration",
+        "generation": {
+          "image_path": "https://openailabsprodscus.blob.core.windows.net/private/user-abcdefghijklmnopqrstuvwx/generations/generation-abcdefghijklmnopqrstuvw4/image.webp?st=2022-07-08T09"
+        },
+        "task_id": "task-abcdefghijklmnopqrstuvwx",
+        "prompt_id": "prompt-abcdefghijklmnopqrstuvwx",
+        "is_public": false
+      },
+      {
+        "id": "generation-abcdefghijklmnopqrstuvw5",
+        "object": "generation",
+        "created": 1657276468,
+        "generation_type": "ImageGeneration",
+        "generation": {
+          "image_path": "https://openailabsprodscus.blob.core.windows.net/private/user-abcdefghijklmnopqrstuvwx/generations/generation-abcdefghijklmnopqrstuvw5/image.webp?st=2022-07-08T09"
+        },
+        "task_id": "task-abcdefghijklmnopqrstuvwx",
+        "prompt_id": "prompt-abcdefghijklmnopqrstuvwx",
+        "is_public": false
+      }
+    ]
+  },
+  "prompt": {
+    "id": "prompt-abcdefghijklmnopqrstuvwx",
+    "object": "prompt",
+    "created": 1657276448,
+    "prompt_type": "CaptionlessImagePrompt",
+    "prompt": {
+      "image_path": "https://openailabsprodscus.blob.core.windows.net/private/user-abcdefghijklmnopqrstuvwx/prompts/prompt-abcdefghijklmnopqrstuvwx/image.webp?st=2022-07-08T09"
+    },
+    "parent_generation_id": null
+  }
+}

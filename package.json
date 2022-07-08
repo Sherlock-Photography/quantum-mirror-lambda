@@ -1,0 +1,14 @@
+{
+  "name": "quantum-mirror-lambda",
+  "version": "1.0.0",
+  "description": "AWS lambda to proxy requests to DALL-E 2 on behalf of Sony cameras",
+  "main": "src/index.js",
+  "scripts": {
+  },
+  "type": "module",
+  "author": "Nicholas Sherlock",
+  "license": "0BSD",
+  "devDependencies": {
+    "serverless": "^3.19.0"
+  }
+}
