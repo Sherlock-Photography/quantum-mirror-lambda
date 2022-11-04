@@ -38,6 +38,7 @@ function httpsReq(url, options = {}) {
                     agent: false,
                     headers: {
                         ...(options.headers || {}),
+                        ...(options.form ? options.form.getHeaders() : {}),
                         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; rv:102.0) Gecko/20100101 Firefox/102.0'
                     }
                 },
@@ -79,16 +80,27 @@ function httpsReq(url, options = {}) {
 
         req.on('error', reject);
 
-        if (options && options.body) {
+        if (options.body) {
             req.write(options.body);
         }
 
-        req.end();
+        if (options.form) {
+            options.form.pipe(req);
+        } else {
+            req.end();
+        }
     })
 }
 
-export function httpsPost(url, {body, ...options}) {
-    return httpsReq(url, {body, method: "POST", ...options});
+/**
+ *
+ * @param {string} url
+ * @param {FormData} form
+ * @param options
+ * @returns {Promise<unknown>}
+ */
+export function httpsPostForm(url, {form, ...options}) {
+    return httpsReq(url, {form, method: "POST", ...options});
 }
 
 export function httpsGet(url, options) {
@@ -96,9 +108,13 @@ export function httpsGet(url, options) {
 }
 
 export function isValidBearerHeader(header) {
-    return /^Bearer sess-[a-zA-Z0-9_=-]+$/.test(header);
+    return /^Bearer sk-[a-zA-Z0-9_=-]+$/.test(header);
 }
 
-export function isValidTaskID(taskID) {
-    return /^task-[a-zA-Z0-9_=-]+$/.test(taskID);
+export function isValidImageSize(value) {
+    return ["256x256", "512x512", "1024x1024"].indexOf(value) > -1;
+}
+
+export function isValidImageCount(value) {
+    return value === (value | 0) && value >= 1 && value <= 10;
 }

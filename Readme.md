@@ -1,7 +1,7 @@
 # Quantum Mirror Lambda
 
 This is the backend service for the [Quantum Mirror app](https://github.com/Sherlock-Photography/QuantumMirror)
-that forwards requests to OpenAI's DALL-E 2 beta endpoints.
+that forwards requests to OpenAI's DALL-E 2 endpoints.
 
 A TLS 1.0 endpoint is deployed to support Sony's ancient TLS stack, and a default Cloudfront domain is used rather than 
 a custom domain name so that Android 2.3.7's lack of SNI support doesn't cause an issue.
@@ -29,7 +29,7 @@ Look for the one labelled "EndpointForCameraTokenTxt":
         EndpointForCameraTokenTxt: https://xxxxxxxx.cloudfront.net/
         ...
    
-Copy that address and put it into the first line of the TOKEN.TXT file on your camera, e.g.:
+Copy that address and put it into the "endpoint" line of the AI-SET.TXT file on your camera, e.g.:
 
-    https://xxxxxxxx.cloudfront.net/
-    sess-xxxxxxxxxxxxxxxxxxxxx
+    api-key=sk-xxx
+    endpoint=https://xxxxxxxx.cloudfront.net/

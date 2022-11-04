@@ -1,5 +1,9 @@
 import {spawn} from "child_process";
-import {isValidBearerHeader, isValidTaskID, HTTPError, httpsGet, httpsPost} from "./common.mjs";
+import {isValidBearerHeader, HTTPError, httpsGet, httpsPostForm, isValidImageSize, isValidImageCount} from "./common.mjs";
+import FormData from "form-data";
+
+const DEFAULT_BATCH_SIZE = 4;
+const DEFAULT_IMAGE_SIZE = "1024x1024";
 
 export async function submitImage(event, context) {
     if (!("x-authorization" in event.headers) || !event.isBase64Encoded) {
@@ -7,16 +11,26 @@ export async function submitImage(event, context) {
     }
 
     let
-        bearerHeader = event.headers["x-authorization"];
+        bearerHeader = event.headers["x-authorization"],
+        imageSize = event.queryStringParameters.size || DEFAULT_IMAGE_SIZE,
+        imageCount = (event.queryStringParameters.count | 0) || DEFAULT_BATCH_SIZE;
 
     if (!isValidBearerHeader(bearerHeader)) {
         throw new Error("Bad bearer token");
     }
 
+    if (!isValidImageSize(imageSize)) {
+        throw new Error("Bad image size");
+    }
+
+    if (!isValidImageCount(imageCount)) {
+        throw new Error("Bad image count");
+    }
+
     let
         inputImage = Buffer.from(event.body, 'base64'),
 
-        // Scale down and crop center 1024x1024 square for DALL-E (it rejects other sizes)
+        // Scale down and crop center 1024x1024 square for DALL-E
         convert = spawn("/opt/bin/convert", [
             "jpeg:-", // JPEG from stdin
             "-thumbnail",
@@ -25,6 +39,8 @@ export async function submitImage(event, context) {
             "center",
             "-extent",
             "1024x1024",
+            "-alpha",
+            "off",
             "png:-" // PNG to stdout
         ], {
             stdio: [
@@ -32,19 +48,6 @@ export async function submitImage(event, context) {
                 "pipe",
                 process.stderr
             ]
-        }),
-
-        stdoutPromise = new Promise((resolve, reject) => {
-            let
-                chunks = [];
-
-            convert.stdout.on('data', chunk => {
-                chunks.push(chunk);
-            });
-
-            convert.stdout.on('end', () => resolve(Buffer.concat(chunks)));
-
-            convert.stdout.on('error', reject);
         }),
 
         finishPromise = new Promise((resolve, reject) => {
@@ -59,29 +62,29 @@ export async function submitImage(event, context) {
 
     convert.stdin.end(inputImage);
 
-    return Promise.all([stdoutPromise, finishPromise])
-        .then(results => results[0].toString("base64"))
-        .then(outputImage => httpsPost(
-            "https://labs.openai.com/api/labs/tasks",
+    let
+        form = new FormData({maxDataSize: 4 * 1024 * 1024});
+
+    form.append("n", "" + imageCount);
+    form.append("size", imageSize);
+    form.append("response_format", "url");
+    form.append("user", "1"); // We only have a single user per API key, so any ID will do here
+    form.append("image", convert.stdout, {filename: "image", contentType: "image/png"});
+
+    return Promise.all([
+        httpsPostForm(
+            "https://api.openai.com/v1/images/variations",
             {
                 headers: {
-                    "Content-Type": "application/json",
                     "Authorization": bearerHeader
                 },
-                body: JSON.stringify({
-                    "task_type": "variations",
-                    "prompt": {
-                        "batch_size": 5,
-                        "image": outputImage
-                    }
-                })
+                form
             }
-        ))
+        ),
+        finishPromise
+    ])
         .then(
-            result => {
-                console.log(JSON.stringify(result));
-                return result;
-            },
+            ([httpResult, exitCodeResult]) => httpResult,
             err => {
                 // Publish OpenAI error messages to the client (with 200 status) if available
                 if (err instanceof HTTPError) {
@@ -98,53 +101,23 @@ export async function submitImage(event, context) {
         );
 }
 
-export async function pollTask(event, context) {
-    if (!("x-authorization" in event.headers) || !("taskID" in event.pathParameters)) {
-        throw new Error("Bad request");
-    }
-
-    let
-        bearerHeader = event.headers["x-authorization"],
-        taskID = event.pathParameters.taskID;
-
-    if (!isValidBearerHeader(bearerHeader)) {
-        throw new Error("Bad bearer token");
-    }
-
-    if (!isValidTaskID(taskID)) {
-        throw new Error("Bad task ID");
-    }
-
-    return retry(
-        () => httpsGet(
-            "https://labs.openai.com/api/labs/tasks/" + taskID,
-            {
-                headers: {
-                    "Authorization": bearerHeader
-                }
-            }
-        ),
-        1, // Allow a single retry
-        5000
-    );
-}
-
 export async function getImage(event, context) {
-    if (!("imagePath" in event.pathParameters)) {
+    let
+        matches = event.rawPath.match(/^\/getImage\/(.+)/);
+
+    if (!matches) {
         throw new Error("Bad request");
     }
 
     let
-        imageURL = "https://openailabsprodscus.blob.core.windows.net/" + event.pathParameters.imagePath + "?" + event.rawQueryString,
+        // Hardcode the domain name so caller can't use us to proxy to arbitrary websites:
+        imageURL = "https://oaidalleapiprodscus.blob.core.windows.net/" + matches[1] + "?" + event.rawQueryString,
 
         webPInput = await httpsGet(imageURL),
 
-        // Transcode to JPEG for Sony's benefit, add missing DALL-E watermark
-        convert = spawn("/opt/bin/composite", [
-            '-gravity',
-            'SouthEast',
-            __dirname + '/watermark.png',
-            "webp:-", // WEBP from stdin
+        // Transcode to JPEG to reduce download time
+        convert = spawn("/opt/bin/convert", [
+            "png:-", // PNG from stdin
             "jpeg:-" // JPEG to stdout
         ], {
             stdio: [

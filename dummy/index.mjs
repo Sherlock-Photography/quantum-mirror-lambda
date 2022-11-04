@@ -1,6 +1,5 @@
 import fs from "fs";
-import {isValidBearerHeader, isValidTaskID} from "../src/common.mjs";
-import taskPendingJSON from "./task-pending.json" assert {type: "json"};
+import {isValidBearerHeader} from "../src/common.mjs";
 import taskCompleteJSON from "./task-complete.json" assert {type: "json"};
 
 export async function submitImage(event, context) {
@@ -17,31 +16,7 @@ export async function submitImage(event, context) {
 
     console.log("Ignoring uploaded image of size " + Buffer.from(event.body, 'base64').length);
 
-    return taskPendingJSON;
-}
-
-export async function pollTask(event, context) {
-    if (!("x-authorization" in event.headers) || !("taskID" in event.pathParameters)) {
-        throw new Error("Bad request");
-    }
-
-    let
-        bearerHeader = event.headers["x-authorization"],
-        taskID = event.pathParameters.taskID;
-
-    if (!isValidBearerHeader(bearerHeader)) {
-        throw new Error("Bad bearer token");
-    }
-
-    if (!isValidTaskID(taskID)) {
-        throw new Error("Bad task ID");
-    }
-
-    if (Math.random() < 0.5) {
-        return taskCompleteJSON;
-    } else {
-        return taskPendingJSON;
-    }
+    return taskCompleteJSON;
 }
 
 export async function getImage(event, context) {
@@ -50,7 +25,7 @@ export async function getImage(event, context) {
     }
 
     let
-        imageIndex = parseInt(/generation-abcdefghijklmnopqrstuvw(\d+)/.exec(event.pathParameters.imagePath)[1], 10);
+        imageIndex = parseInt(/img-(\d+)/.exec(event.pathParameters.imagePath)[1], 10);
 
     return {
         'headers': { "Content-Type": "image/jpeg" },
