@@ -113,7 +113,7 @@ export async function getImage(event, context) {
         // Hardcode the domain name so caller can't use us to proxy to arbitrary websites:
         imageURL = "https://oaidalleapiprodscus.blob.core.windows.net/" + matches[1] + "?" + event.rawQueryString,
 
-        webPInput = await httpsGet(imageURL),
+        pngInput = await httpsGet(imageURL),
 
         // Transcode to JPEG to reduce download time
         convert = spawn("/opt/bin/convert", [
@@ -150,7 +150,7 @@ export async function getImage(event, context) {
             });
         });
 
-    convert.stdin.end(webPInput);
+    convert.stdin.end(pngInput);
 
     let
         jpeg = (await Promise.all([stdoutPromise, finishPromise]))[0];
